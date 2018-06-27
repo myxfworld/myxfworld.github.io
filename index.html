@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>韭菜之路</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+    <!-- jQuery 3 -->
+    <script src="lib/jquery-3.3.1.min.js"></script>
+
+    <!-- jQuery 3 -->
+    <script src="lib/layer.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="stylesheets/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body{
+            -webkit-user-select:none;
+            -moz-user-select:none;
+            -ms-user-select:none;
+            user-select:none;
+        }
+        .box{
+            width:60%;
+            margin:0 auto;
+        }
+        .table{
+            border:1px solid #999;
+        }
+        .title{
+            text-align:center;
+        }
+        .head{
+            line-height: 40px;
+            text-align:center;
+            background:#ccc;
+        }
+        .head h4{
+            margin:0;
+        }
+        .all-currency{
+            overflow:hidden;
+            clear:both;
+        }
+        .bit,.copycat,.air{
+            float: left;
+            width:33.33333%;
+        }
+        h5{
+            text-align:Center;
+            margin:0;
+            line-height: 30px;
+            border-bottom:1px solid #999;
+        }
+        .single-currency{
+            /*height:120px;*/
+        }
+        .single-currency div{
+            padding-left:10px;
+            height:30px;
+            line-height: 30px;
+            border-bottom:1px solid #999;
+            border-right:1px solid #999;
+        }
+        .single-currency div span{
+            cursor:pointer;
+        }
+        .cash h5,.own h5{
+            padding-left:10px;
+            text-align:left;
+        }
+        .air div{
+            border-right:0;
+        }
+        .own h5{
+            border:0;
+        }
+        #btn{
+            margin-top:10px;
+        }
+        #own{
+            height:80px;
+            padding:0 10px 10px 10px;
+        }
+        #own span{
+            display:inline-block;
+            padding-right:20px;
+            cursor:pointer;
+        }
+        .single-currency .temp-hide{
+            display:none;
+        }
+        #buyBox{
+
+        }
+        #buyBox input{
+            width:120px;
+            margin:0 20px;
+            border:none;
+            border-bottom:1px solid #000;
+            text-align: center;
+        }
+        @media screen and (max-width: 600px) {
+            .box{
+                width:98%;
+                margin:0 auto;
+            }
+        }
+        @media screen and (min-width: 600px) {
+            .box{
+                width:500px;
+                margin:0 auto;
+            }
+        }
+    </style>
+
+</head>
+
+<body class="hold-transition skin-blue">
+<div class="box">
+    <h3 class="title">韭菜之路</h3>
+    <div class="table">
+        <div class="head">
+            <h4>第&nbsp;<span id="day"></span>&nbsp;天</h4>
+        </div>
+        <div class="all-currency">
+            <div class="bit">
+                <h5>主流币</h5>
+                <div class="single-currency">
+                    <div><span id="biteCoin"></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+
+                </div>
+            </div>
+            <div class="copycat">
+                <h5>山寨币</h5>
+                <div class="single-currency">
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                </div>
+            </div>
+            <div class="air">
+                <h5>空气币</h5>
+                <div class="single-currency" id="air">
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span></span></div>
+                    <div><span class="temp-hide"></span></div>
+                    <div><span class="temp-hide"></span></div>
+                    <div><span class="temp-hide"></span></div>
+                    <div><span class="temp-hide"></span></div>
+                    <div><span class="temp-hide"></span></div>
+                </div>
+            </div>
+        </div>
+        <div class="cash">
+            <h5>现金：<span id="cash"></span></h5>
+        </div>
+        <div class="own">
+            <h5 style="font-weight:bold">持有：</h5>
+            <div id="own"></div>
+        </div>
+
+    </div>
+    <button id="btn" class="btn btn-primary">结束一天</button>
+</div>
+
+
+<script src=lib/jquery-3.3.1.min.js></script>
+<script src=lib/nebPay.min.js></script>
+<script src=lib/bootstrap.min.js></script>
+<script src=lib/nebulas.js></script>
+<script>
+    var leekItem;
+
+    var nowDay = 1;
+
+    var airCoin1,airCoin2,airCoin3,airCoin4,airCoin5,airCoin6,airCoin7, airCoin8,airCoin9,airCoin10;
+
+
+    var tempHide = $(".single-currency .temp-hide");
+    var dayBox = $("#day");
+    var cash = $("#cash");
+    var own = $("#own");
+    var ownCoin = own.find('span');
+    var bitContent = $(".bit").find(".single-currency").find('span').eq(0);
+    var dogContent = $(".copycat").find(".single-currency").find('span').eq(0);
+    var lightContent = $(".copycat").find(".single-currency").find('span').eq(1);
+    var exponentContent = $(".copycat").find(".single-currency").find('span').eq(2);
+    var futureContent = $(".copycat").find(".single-currency").find('span').eq(3);
+    var airContent = $(".air").find(".single-currency").find('span').eq(0);
+
+    var btn = $("#btn");
+
+    var airBox = $("#air div span");
+
+
+    var dappAddress = "n1fjQ9xMgXgCiDU3n2fJDVbTh7CZ634BSCt";
+
+
+    var nebulas = require("nebulas"),
+        Account = nebulas.Account,
+        neb = new nebulas.Neb();
+    neb.setRequest(new nebulas.HttpRequest("https://testnet.nebulas.io"));
+
+    var from = Account.NewAccount().getAddressString();
+    var value = "0";
+    var nonce = "0";
+    var gas_price = "1000000";
+    var gas_limit = "2000000";
+    var callFunction = "get";
+    var callArgs = JSON.stringify([nowDay]);  //推荐用 JSON.stringify 来生成参数字符串,这样会避免出错!
+    var contract = {
+        "function": callFunction,
+        "args": callArgs
+    };
+
+    getData();
+    function getData(){
+        neb.api.call(from,dappAddress,value,nonce,gas_price,gas_limit,contract).then(function (resp) {
+            cbSearch(resp)
+        }).catch(function (err) {
+            console.log("error:" + err.message)
+        });
+    }
+
+
+    function cbSearch(result){
+       btn.removeAttr('disabled');
+
+        console.log('------------',result,'------------')
+        result = JSON.parse(result.result);
+        sessionStorage.leekItem = result;
+        // console.log('sessionStorage',sessionStorage.leekItem)
+        leekItem = result;
+        var pCash = result.pCash;
+        var content = result.content;
+        var bitCurrency = result['比特币'];
+        var dogCurrency = result['狗狗币'];
+        var lightCurrency = result['莱特币'];
+        var exponentCurrency = result['指数币'];
+        var futureCurrency = result['未来币'];
+        dayBox.html(nowDay);
+        if(nowDay>5){
+            dogContent.html('狗狗币：'+dogCurrency);
+            lightContent.html('莱特币：'+lightCurrency);
+            exponentContent.html('指数币：'+exponentCurrency);
+            futureContent.html('未来币：'+futureCurrency);
+
+        }
+        var temp = [];
+        if(nowDay==26){
+            for(var key in leekItem){
+                if(key != 'pCash' && key !='content' && key != 'usedEvent' && key != 'own' && key != '指数币' && key != '比特币' && key != '狗狗币' && key != '莱特币' && key != '未来币'){
+                    temp.push(key);
+                }
+            }
+
+            leekItem['airCoin1'] = 1;
+            leekItem['airCoin2'] = 1;
+            leekItem['airCoin3'] = 1;
+            leekItem['airCoin4'] = 1;
+            leekItem['airCoin5'] = 1;
+            leekItem['airCoin6'] = 1;
+            leekItem['airCoin7'] = 1;
+            leekItem['airCoin8'] = 1;
+            leekItem['airCoin9'] = 1;
+            leekItem['airCoin10'] = 1;
+
+            airCoin1 = temp[0];
+            airCoin2 = temp[1];
+            airCoin3 = temp[2];
+            airCoin4 = temp[3];
+            airCoin5 = temp[4];
+            airCoin6 = temp[5];
+            airCoin7 = temp[6];
+            airCoin8 = temp[7];
+            airCoin9 = temp[8];
+            airCoin10 = temp[9];
+            for(var i=0;i<10;i++){
+                delete leekItem[temp[i]];
+            }
+
+            insertAirCoin();
+        }
+        if(nowDay>26){
+            if(nowDay==27){
+                tempHide.eq(0).show();
+                leekItem['airCoin6'] = 1;
+            }
+            else if(nowDay==28){
+                tempHide.eq(1).show();
+                leekItem['airCoin7'] = 1;
+            }else if(nowDay==29){
+                tempHide.eq(2).show();
+                leekItem['airCoin8'] = 1;
+            }else if(nowDay==30){
+                tempHide.eq(3).show();
+                leekItem['airCoin9'] = 1;
+            }else if(nowDay==31){
+                tempHide.eq(4).show();
+                leekItem['airCoin10'] = 1;
+            }
+
+
+            insertAirCoin();
+
+        }
+
+        function insertAirCoin(){
+            airBox.each(function(i){
+                if(i==0){
+                    $(this).html(airCoin1+'：'+ leekItem['airCoin1']);
+                }else if(i==1){
+                    $(this).html(airCoin2+'：'+ leekItem['airCoin2']);
+                }else if(i==2){
+                    $(this).html(airCoin3+'：'+ leekItem['airCoin3']);
+                }else if(i==3){
+                    $(this).html(airCoin4+'：'+ leekItem['airCoin4']);
+                }else if(i==4){
+                    $(this).html(airCoin5+'：'+ leekItem['airCoin5']);
+                }else if(i==5){
+                    $(this).html(airCoin6+'：'+ leekItem['airCoin6']);
+                }else if(i==6){
+                    $(this).html(airCoin7+'：'+ leekItem['airCoin7']);
+                }else if(i==7){
+                    $(this).html(airCoin8+'：'+ leekItem['airCoin8']);
+                }else if(i==8){
+                    $(this).html(airCoin9+'：'+ leekItem['airCoin9']);
+                }else if(i==9){
+                    $(this).html(airCoin10+'：'+ leekItem['airCoin10']);
+                }
+            })
+        }
+
+
+        nowDay++;
+        cash.html(pCash);
+        bitContent.html('比特币：'+ bitCurrency);
+        if(content){
+            alert(content);
+        }
+        $("#own").empty();
+        for(var name in leekItem.own){
+            var span = $("<span></span>");
+            var trueName;
+            if(name=='airCoin1'){
+                trueName = airCoin1;
+            }else if(name=='airCoin2'){
+                trueName = airCoin2;
+            }else if(name=='airCoin3'){
+                trueName = airCoin3;
+            }else if(name=='airCoin4'){
+                trueName = airCoin4;
+            }else if(name=='airCoin5'){
+                trueName = airCoin5;
+            }else if(name=='airCoin6'){
+                trueName = airCoin6;
+            }else if(name=='airCoin7'){
+                trueName = airCoin7;
+            }else if(name=='airCoin8'){
+                trueName = airCoin8;
+            }else if(name=='airCoin9'){
+                trueName = airCoin9;
+            }else if(name=='airCoin10'){
+                trueName = airCoin10;
+            }else{
+                trueName = name;
+            }
+            if(leekItem.own[name]['num']!=0){
+                var temp2 = Math.round(leekItem.own[name]['allPrice']/leekItem.own[name]['num']);
+                span.html(trueName+'('+temp2+')：'+leekItem.own[name]['num']);
+                span.attr('data-name',name);
+                span.click(sale);
+                $("#own").append(span);
+            }
+
+        }
+    }
+
+
+
+    var NebPay = require("nebpay");     //https://github.com/nebulasio/nebPay
+    var nebPay = new NebPay();
+    var serialNumber;
+    //var callbackUrl = NebPay.config.mainnetUrl;   //如果合约在主网,则使用这个
+    var callbackUrl = NebPay.config.testnetUrl;   //
+
+    btn.click(function() {
+        $(this).attr('disabled','disabled');
+        var callFunction = "endOneDay";
+        var callArgs = JSON.stringify([nowDay,leekItem]);  //推荐用 JSON.stringify 来生成参数字符串,这样会避免出错!
+        var contract = {
+            "function": callFunction,
+            "args": callArgs
+        };
+
+        neb.api.call(from,dappAddress,value,nonce,gas_price,gas_limit,contract).then(function (resp) {
+            cbSearch(resp)
+        }).catch(function (err) {
+            console.log("error:" + err.message)
+        });
+    });
+
+
+    //点击购买
+    var allCoin = $(".single-currency span");
+    allCoin.each(function(){
+        $(this).click(function(){
+            var coinName = $(this).html().split('：')[0];
+            layer.open({
+                content: "<div style='padding: 10px;' id='buyBox'>" +
+                "<button style='padding:4px 10px' id='reduce' onclick='reduceClick(this)'>-</button>" +
+                "<input value='' type='text' id='num'><button style='padding:4px 10px;' onclick='plusClick(this)' id='plus'>+</button></div>" +
+                "<span id='empty-notice' style='padding:10px 10px 0 10px'></span>",
+                // area: ['50%', '30%'],
+                title: [coinName+'(买进)', 'font-size:14px'],
+                // maxmin: false,
+                btn: ['购买', '取消'],
+                skin: 'msg',
+                success:function(){
+                    var onePrice;
+                    if(airCoin1==coinName){
+                        coinName = 'airCoin1';
+                    }else if(airCoin2==coinName){
+                        coinName = 'airCoin2';
+                    }else if(airCoin3==coinName){
+                        coinName = 'airCoin3';
+                    }else if(airCoin4==coinName){
+                        coinName = 'airCoin4';
+                    }else if(airCoin5==coinName){
+                        coinName = 'airCoin5';
+                    }else if(airCoin6==coinName){
+                        coinName = 'airCoin6';
+                    }else if(airCoin7==coinName){
+                        coinName = 'airCoin7';
+                    }else if(airCoin8==coinName){
+                        coinName = 'airCoin8';
+                    }else if(airCoin9==coinName){
+                        coinName = 'airCoin9';
+                    }else if(airCoin10==coinName){
+                        coinName = 'airCoin10';
+                    }
+
+                    //判断钱够不够
+                    onePrice = leekItem[coinName];
+                    var tempNum = Math.floor(leekItem.pCash/onePrice);
+                    $("#num").val(tempNum);
+                },
+                yes:function(){
+
+
+                    var onePrice;
+                    if(airCoin1==coinName){
+                        coinName = 'airCoin1';
+                    }else if(airCoin2==coinName){
+                        coinName = 'airCoin2';
+                    }else if(airCoin3==coinName){
+                        coinName = 'airCoin3';
+                    }else if(airCoin4==coinName){
+                        coinName = 'airCoin4';
+                    }else if(airCoin5==coinName){
+                        coinName = 'airCoin5';
+                    }else if(airCoin6==coinName){
+                        coinName = 'airCoin6';
+                    }else if(airCoin7==coinName){
+                        coinName = 'airCoin7';
+                    }else if(airCoin8==coinName){
+                        coinName = 'airCoin8';
+                    }else if(airCoin9==coinName){
+                        coinName = 'airCoin9';
+                    }else if(airCoin10==coinName){
+                        coinName = 'airCoin10';
+                    }
+
+                    //判断钱够不够
+                    onePrice = leekItem[coinName];
+
+
+                    var num = parseInt($("#num").val());
+                    var allPrice = onePrice * num;
+                    if(allPrice>leekItem.pCash){
+                        $("#empty-notice").html('余额不足');
+                        return;
+                    }
+                    leekItem.pCash -= allPrice;
+                    if(!leekItem.own[coinName]){
+                        leekItem.own[coinName] = {};
+                    }
+                    leekItem.own[coinName]['num'] = leekItem.own[coinName]['num']?leekItem.own[coinName]['num']+num:num;
+                    leekItem.own[coinName]['allPrice'] = leekItem.own[coinName]['allPrice']?leekItem.own[coinName]['allPrice']+allPrice:allPrice;
+
+                    cash.html(leekItem.pCash);
+                    $("#own").empty();
+
+                    for(var name in leekItem.own){
+                        var span = $("<span></span>");
+                        var trueName;
+                        if(name=='airCoin1'){
+                            trueName = airCoin1;
+                        }else if(name=='airCoin2'){
+                            trueName = airCoin2;
+                        }else if(name=='airCoin3'){
+                            trueName = airCoin3;
+                        }else if(name=='airCoin4'){
+                            trueName = airCoin4;
+                        }else if(name=='airCoin5'){
+                            trueName = airCoin5;
+                        }else if(name=='airCoin6'){
+                            trueName = airCoin6;
+                        }else if(name=='airCoin7'){
+                            trueName = airCoin7;
+                        }else if(name=='airCoin8'){
+                            trueName = airCoin8;
+                        }else if(name=='airCoin9'){
+                            trueName = airCoin9;
+                        }else if(name=='airCoin10'){
+                            trueName = airCoin10;
+                        }else{
+                            trueName = name;
+                        }
+                        if(leekItem.own[name]['num']!=0){
+                            var temp = Math.round(leekItem.own[name]['allPrice']/leekItem.own[name]['num']);
+                            span.html(trueName+'('+temp+')：'+leekItem.own[name]['num']);
+                            span.attr('data-name',name);
+                            span.click(sale);
+                            $("#own").append(span);
+                        }
+
+                    }
+
+                    layer.closeAll();
+                }
+            });
+        });
+    });
+
+    //点击卖出
+    sale = function(){
+        var coinName = $(this).html().split('(')[0];
+        console.log(coinName)
+        var self = $(this);
+        layer.open({
+            content: "<div style='padding: 10px;' id='buyBox'>" +
+            "<button disabled style='padding:4px 10px' id='reduce' onclick='reduceClick(this)'>-</button>" +
+            "<input value='1' type='text' id='num'><button style='padding:4px 10px;' onclick='plusClick(this)' id='plus'>+</button></div>" +
+            "<span id='empty-notice' style='padding:10px 10px 0 10px'></span>",
+            // area: ['50%', '30%'],
+            title: [coinName+'(卖出)', 'font-size:14px'],
+            // maxmin: false,
+            btn: ['卖出', '取消'],
+            skin: 'msg',
+            success:function(){
+                var dbName = self.attr('data-name');
+                var ownNum = leekItem.own[dbName]['num'];
+                $("#num").val(ownNum);
+            },
+            yes:function(){
+
+                //判断持有的够不够卖
+                var num = parseInt($("#num").val());
+                var dbName = self.attr('data-name');
+                console.log(leekItem)
+                var ownNum = leekItem.own[dbName]['num'];
+
+                if(ownNum<num){
+                    $("#empty-notice").html('持有的币数不足');
+                    return;
+                }
+                var onePrice = leekItem[dbName];
+
+                leekItem.pCash += onePrice * num;
+                leekItem.own[dbName]['allPrice'] = leekItem.own[dbName]['allPrice'] - num*Math.round(leekItem.own[dbName]['allPrice'] / leekItem.own[dbName]['num']);
+                console.log(leekItem.own[dbName]['allPrice'])
+                leekItem.own[dbName]['num'] = leekItem.own[dbName]['num']-num;
+
+                if(leekItem.own[dbName]['num'] == 0){
+                    self.remove();
+                }else{
+                    var temp = Math.round(leekItem.own[dbName]['allPrice']/leekItem.own[dbName]['num']);
+                    self.html(coinName+'('+temp+')：'+leekItem.own[dbName]['num']);
+                }
+                console.log(leekItem)
+                cash.html(leekItem.pCash);
+
+                layer.closeAll();
+            }
+        });
+    }
+
+
+
+    reduceClick = function(self){
+        var nowVal = parseInt($(self).next().val());
+        if(nowVal>1){
+            $(self).next().val(nowVal-1);
+        }
+
+
+    };
+    plusClick = function(self){
+        $("#empty-notice").html('');
+        var nowVal = parseInt($(self).prev().val());
+        $(self).prev().val(nowVal+1);
+    }
+
+
+</script>
+
+<!-- jQuery UI 1.11.4 -->
+<!--<script src="/javascripts/jquery-ui.min.js"></script>-->
+<!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+<script>
+    // $.widget.bridge('uibutton', $.ui.button);
+</script>
+<!--[if lt IE 9]>
+<script src="lib/html5shiv.min.js"></script>
+<script src="lib/respond.min.js"></script>
+<![endif]-->
+<!-- Bootstrap 3.3.7 -->
+<script src="lib/bootstrap.min.js"></script>
+
+</body>
+</html>
